@@ -24,7 +24,7 @@ export function App() {
   useEffect(() => {
     setTasksOpen(tasks.filter(task => task.closed === false));
     setTasksClosed(tasks.filter(task => task.closed === true));
-  },[]) // Criando loop
+  }) // Criando loop
 
   function handleOnChangeTitle(event: ChangeEvent<HTMLInputElement>) {
     setTitle(event.target.value);
