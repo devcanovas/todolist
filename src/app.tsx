@@ -1,4 +1,4 @@
-import { CheckCircle, CheckSquare, Square } from "lucide-react";
+import { Check, CheckCircle, CheckSquare, Clock, Square } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -17,12 +17,14 @@ export function App() {
     }
     return [];
   });
+  const [tasksOpen, setTasksOpen] = useState<Task[]>([]);
   const [tasksClosed, setTasksClosed] = useState<Task[]>([]);
   const [title, setTitle] = useState("");
 
   useEffect(() => {
-    setTasksClosed(tasks.filter(task => task.closed === true))
-  })
+    setTasksOpen(tasks.filter(task => task.closed === false));
+    setTasksClosed(tasks.filter(task => task.closed === true));
+  },[]) // Criando loop
 
   function handleOnChangeTitle(event: ChangeEvent<HTMLInputElement>) {
     setTitle(event.target.value);
@@ -46,6 +48,14 @@ export function App() {
     setTasks(tasksArrays);
 
     localStorage.setItem("tasks", JSON.stringify(tasksArrays));
+
+    setTitle("");
+  }
+
+  function cleanTasks() {
+    setTasks([]);
+    localStorage.clear();
+    toast.success("Todas as tarefas foram excluídas com sucesso!")
   }
 
   function handleOnCloseTask(task: Task) {
@@ -72,14 +82,20 @@ export function App() {
           className="border rounded-full p-2 text-center w-full outline-none"
           placeholder="Insira o título da sua tarefa aqui"
           onChange={handleOnChangeTitle}
+          value={title}
         />
         <span className="text-sm text-zinc-400">
           Pressione <b>ENTER</b> para adicionar uma nova tarefa.
         </span>
       </form>
-      <section className="flex flex-col space-y-2 w-full">
-        {tasks &&
-          tasks
+
+      {tasksOpen.length > 0 && (
+        <section className="flex flex-col space-y-2 w-full">
+          <div className="flex items-center space-x-2 text-zinc-500">
+            <Clock className="size-4" />
+            <h2 className="text-lg ">Tarefas pendentes:</h2>
+          </div>
+          {tasks
             .filter((task) => task.closed === false)
             .map((task) => {
               return (
@@ -93,30 +109,34 @@ export function App() {
                 </button>
               );
             })}
-      </section>
-      <section className="flex flex-col w-full">
-        {tasksClosed &&
-          tasksClosed
-            .map((task) => {
-              return (
-                <button
-                  onClick={() => handleOnCloseTask(task)}
-                  className="flex space-x-2 border w-full text-zinc-600 rounded-full px-4 py-2 items-center"
-                >
-                  <CheckSquare className="size-4 text-sky-400" />
-                  <h2 className="line-through text-zinc-300">{task.title}</h2>
-                </button>
-              );
-            })}
-      </section>
+        </section>
+      )}
+
+      {tasksClosed.length > 0 && (
+        <section className="flex flex-col w-full space-y-2">
+          <div className="flex space-x-2 text-zinc-400 items-center">
+            <Check className="size-4 text-sky-400" />
+            <h2 className="text-lg">Tarefas concluídas:</h2>
+          </div>
+          {tasksClosed.map((task) => {
+            return (
+              <button
+              key={task.id}
+                onClick={() => handleOnCloseTask(task)}
+                className="flex space-x-2 border w-full text-zinc-600 rounded-full px-4 py-2 items-center"
+              >
+                <CheckSquare className="size-4 text-sky-400" />
+                <h2 className="line-through text-zinc-300">{task.title}</h2>
+              </button>
+            );
+          })}
+        </section>
+      )}
       {tasks.length > 0 && (
         <div className="flex justify-end w-full">
           <button
             className="px-4 py-2 text-sm hover:bg-zinc-100 rounded-lg"
-            onClick={() => {
-              setTasks([]);
-              localStorage.clear();
-            }}
+            onClick={cleanTasks}
           >
             Limpar todas as tarefas
           </button>
